@@ -12,7 +12,8 @@ sudo bash carbonio_quota_exporter.sh
 
 The script writes `/opt/zextras/zmstat/prometheus/carbonio_quotas.prom` by
 default. The directory must exist and be configured as a node exporter textfile
-collector directory. Use `--output /path/to/file.prom` to select another file.
+collector directory. The generated file is owned by `zextras:zextras` and has
+mode `644`. Use `--output /path/to/file.prom` to select another file.
 For example, add this to root's crontab (`sudo crontab -e`) to refresh the
 metrics every five minutes (replace the path with the script's actual location):
 
