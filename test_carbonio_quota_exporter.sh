@@ -32,7 +32,12 @@ cat > "$testdir/zmmailbox" <<'EOF'
 [[ ${FAIL:-} != size ]] || { echo invalid; exit 0; }
 printf 'usage scope notice\n%s\n' "$([[ $3 == alice* ]] && echo 1572864 || echo 512)"
 EOF
-chmod +x "$testdir/su" "$testdir/carbonio" "$testdir/zmmailbox"
+cat > "$testdir/chown" <<'EOF'
+#!/usr/bin/env bash
+[[ $# == 3 && $1 == zextras:zextras && $2 == -- ]] || exit 1
+printf '%s %s %s\n' "$1" "$2" "$3" >> "$TESTDIR/chown.log"
+EOF
+chmod +x "$testdir/su" "$testdir/carbonio" "$testdir/zmmailbox" "$testdir/chown"
 
 output="$testdir/quotas.prom"
 "$root/carbonio_quota_exporter.sh" --output "$output"
@@ -41,6 +46,8 @@ grep -Fqx 'carbonio_mailbox_used_bytes{account="alice@example.test"} 1572864' "$
 grep -Fqx "carbonio_mailbox_used_bytes{account=\"odd'\\\"\$(touch $testdir/injected)@example.test\"} 512" "$output"
 [[ ! -e $testdir/injected ]]
 [[ $(stat -c '%a' "$output") == 644 ]]
+[[ $(wc -l < "$testdir/chown.log") == 1 ]]
+grep -Eq "^zextras:zextras -- $testdir/\\.quotas\\.prom\\.[^/]+$" "$testdir/chown.log"
 
 cp "$output" "$testdir/expected"
 for failure in list size quota missing; do

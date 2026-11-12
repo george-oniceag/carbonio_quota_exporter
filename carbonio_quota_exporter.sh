@@ -57,5 +57,6 @@ trap 'rm -f -- "$temporary"' EXIT
     done <<< "$accounts"
 } > "$temporary"
 
+chown zextras:zextras -- "$temporary"
 chmod 644 -- "$temporary"
 mv -fT -- "$temporary" "$output"
